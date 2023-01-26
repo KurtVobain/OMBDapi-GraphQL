@@ -23,7 +23,7 @@ def get_films(title: str) -> list[dict] and int:
     result = requests.get('http://www.omdbapi.com/', params=payload)
     film_list = result.json().get('Search')
 
-    return film_list, len(film_list)
+    return film_list
 
 
 class Film(ObjectType):
@@ -37,17 +37,12 @@ class Film(ObjectType):
     Type = String()
     Poster = String()
 
-    @classmethod
-    def resolve_film_title(instance, info):
-        return instance.Title
-
 
 class FilmConnection(Connection):
     total_count = Int()
 
-    def resolve_total_count(self, info, **kwargs):
-        _, total_amount = get_films(kwargs.get('Title'))
-        return total_amount
+    def resolve_total_count(root, info, **kwargs):
+        return len(root.iterable)
 
     class Meta:
         node = Film
@@ -56,7 +51,10 @@ class FilmConnection(Connection):
         other = String()
 
         def resolve_other(instance, info):
+            print(instance)
+            print(info)
             return "This is other: " + instance.node.other
+
 
 
 class Query(ObjectType):
@@ -67,7 +65,7 @@ class Query(ObjectType):
     get_films = relay.ConnectionField(FilmConnection, Title=String())
 
     def resolve_get_films(self, info, **kwargs):
-        film_list, _ = get_films(kwargs.get('Title'))
+        film_list = get_films(kwargs.get('Title'))
         return film_list
 
 
