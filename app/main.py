@@ -29,18 +29,21 @@ def get_films(
         "y": year,
     }
     result = requests.get("http://www.omdbapi.com/", params=payload)
+    # TODO:
+    # Error Handler
     response_pages = int(result.json().get("totalResults")) // 10 + 1
 
     film_list = result.json().get("Search")
-
+    # status = dict()
     if response_pages > 1:
         for page in range(response_page, response_pages + 1):
             payload["page"] = page
             result = requests.get("http://www.omdbapi.com/", params=payload)
 
+            # status[page] = result.status_code
             film_list += result.json().get("Search")
 
-    return film_list
+    return film_list  # , status
 
 
 class Film(ObjectType):
