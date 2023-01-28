@@ -1,41 +1,59 @@
 import os
-import json
 
 import requests
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from graphene import (
-    ObjectType, List, String, Int, Connection, Schema, relay
-)
+from graphene import ObjectType, String, Int, Connection, Schema, relay
 from starlette_graphene3 import GraphQLApp, make_graphiql_handler
 
 load_dotenv()
 
 
-def get_films(title: str) -> list[dict] and int:
+def get_films(
+    title: str, result_type: str = None, year: int = None, response_page: int = 1
+) -> list[dict]:
     """
     :descr: Make a request to OMDBAPI
     :param title: Film title to search for
+    :param result_type: Type of result to return. Could be movie, series or episode
+    :param year: Year of release
+    :param response_page: Page number to return.
 
     :return: List of request results and amount of elements in the list
     """
-    payload = {'apikey': os.getenv('OMDB_API_TOKEN'), 's': title}
-    result = requests.get('http://www.omdbapi.com/', params=payload)
-    film_list = result.json().get('Search')
+    payload = {
+        "apikey": os.getenv("OMDB_API_TOKEN"),
+        "s": title,
+        "page": response_page,
+        "type": result_type,
+        "y": year,
+    }
+    result = requests.get("http://www.omdbapi.com/", params=payload)
+    response_pages = int(result.json().get("totalResults")) // 10 + 1
+
+    film_list = result.json().get("Search")
+
+    if response_pages > 1:
+        for page in range(response_page, response_pages + 1):
+            payload["page"] = page
+            result = requests.get("http://www.omdbapi.com/", params=payload)
+
+            film_list += result.json().get("Search")
 
     return film_list
 
 
 class Film(ObjectType):
-    """Represents film structure from OMBD API """
-    class Meta:
-        interfaces = (relay.Node, )
+    """Represents film structure from OMBD API"""
 
     Title = String()
     Year = String()
     imdbID = String()
     Type = String()
     Poster = String()
+
+    class Meta:
+        interfaces = (relay.Node,)
 
 
 class FilmConnection(Connection):
@@ -56,16 +74,22 @@ class FilmConnection(Connection):
             return "This is other: " + instance.node.other
 
 
-
 class Query(ObjectType):
     # Root field due Relay specification
     node = relay.Node.Field()
 
     film_list = None
-    get_films = relay.ConnectionField(FilmConnection, Title=String())
+    get_films = relay.ConnectionField(
+        FilmConnection, Title=String(), Type=String(), Year=Int()
+    )
 
     def resolve_get_films(self, info, **kwargs):
-        film_list = get_films(kwargs.get('Title'))
+
+        film_list = get_films(
+            title=kwargs.get("Title"),
+            result_type=kwargs.get("Type"),
+            year=kwargs.get("Year"),
+        )
         return film_list
 
 
