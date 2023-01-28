@@ -4,7 +4,7 @@ Build image:
 
 Run container:
 
-```docker run --name seedtrace-container  -p 80:80 -it seedtrace-image```
+```docker run --rm --name seedtrace-container  -p 80:80 -it seedtrace-image```
 
 URL -  http://127.0.0.1/
 
