@@ -11,7 +11,7 @@ load_dotenv()
 
 def get_films(
     title: str, result_type: str = None, year: int = None, response_page: int = 1
-) -> list[dict]:
+) -> list:
     """
     :descr: Make a request to OMDBAPI
     :param title: Film title to search for
@@ -19,7 +19,7 @@ def get_films(
     :param year: Year of release
     :param response_page: Page number to return.
 
-    :return: List of request results and amount of elements in the list
+    :return: List of request results
     """
     payload = {
         "apikey": os.getenv("OMDB_API_TOKEN"),
@@ -29,21 +29,24 @@ def get_films(
         "y": year,
     }
     result = requests.get("http://www.omdbapi.com/", params=payload)
-    # TODO:
-    # Error Handler
-    response_pages = int(result.json().get("totalResults")) // 10 + 1
 
-    film_list = result.json().get("Search")
-    # status = dict()
-    if response_pages > 1:
+    if result.json().get("Response") == "False":
+        film_list = []
+
+    else:
+        # OMDB api returns 10 results per page
+        films_per_page = 10
+        response_pages = int(result.json().get("totalResults")) // films_per_page + 1
+
+        # Get full number of searched films in one list
+        film_list = result.json().get("Search")
         for page in range(response_page, response_pages + 1):
             payload["page"] = page
             result = requests.get("http://www.omdbapi.com/", params=payload)
 
-            # status[page] = result.status_code
             film_list += result.json().get("Search")
 
-    return film_list  # , status
+    return film_list
 
 
 class Film(ObjectType):
@@ -62,7 +65,12 @@ class Film(ObjectType):
 class FilmConnection(Connection):
     total_count = Int()
 
-    def resolve_total_count(root, info, **kwargs):
+    def resolve_total_count(root, info, **kwargs) -> int:
+        """
+        :descr: Return total amount of films in the response
+        :param info: Meta information about the execution of the current GraphQL Query
+        :return: Total amount of films
+        """
         return len(root.iterable)
 
     class Meta:
@@ -72,8 +80,6 @@ class FilmConnection(Connection):
         other = String()
 
         def resolve_other(instance, info):
-            print(instance)
-            print(info)
             return "This is other: " + instance.node.other
 
 
@@ -83,15 +89,20 @@ class Query(ObjectType):
 
     film_list = None
     get_films = relay.ConnectionField(
-        FilmConnection, Title=String(), Type=String(), Year=Int()
+        FilmConnection, title=String(), type=String(), year=Int()
     )
 
-    def resolve_get_films(self, info, **kwargs):
+    def resolve_get_films(self, info, **kwargs) -> list:
+        """
+        :descr: Return full list of searched films
+        :param info: Meta information about the execution of the current GraphQL Query
+        :return: list of searched films
+        """
 
         film_list = get_films(
-            title=kwargs.get("Title"),
-            result_type=kwargs.get("Type"),
-            year=kwargs.get("Year"),
+            title=kwargs.get("title"),
+            result_type=kwargs.get("type"),
+            year=kwargs.get("year"),
         )
         return film_list
 
