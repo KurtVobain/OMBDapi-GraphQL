@@ -36,10 +36,11 @@ def get_films(
 
         # Get full number of searched films in one list
         film_list = result.json().get("Search")
-        for page in range(response_page, response_pages + 1):
+        for page in range(response_page+1, response_pages + 1):
             payload["page"] = page
             result = requests.get("http://www.omdbapi.com/", params=payload)
 
-            film_list += result.json().get("Search")
+            if result.json().get('Response') == "True":
+                film_list += result.json().get("Search")
 
     return film_list
