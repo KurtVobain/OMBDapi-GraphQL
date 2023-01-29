@@ -19,12 +19,16 @@ More info about OMBDapi [here](https://www.omdbapi.com/).
 
 Execute at the root directory:
 
-```docker build -t seedtrace-image -f Dockerfile .```
+```
+docker build -t seedtrace-image -f Dockerfile .
+```
 
 ### Run container
 Execute:
 
-```docker run --rm --name seedtrace-container  -p 80:80 -it seedtrace-image```
+```
+docker run --rm --name seedtrace-container  -p 80:80 -it seedtrace-image
+```
 
 # Usage Example
 
@@ -61,6 +65,13 @@ Request example:
   }
 }
 ```
+
+Available fields for each node:
+ * Title
+ * Year
+ * imdbID
+ * Type
+ * Poster
 
 ### Available parameters
 #### getFilms
