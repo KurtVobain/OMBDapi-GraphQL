@@ -91,3 +91,4 @@ Available fields for each node:
 * [GraphQL](https://graphql.org/)
 * [uvicorn](https://www.uvicorn.org/)
 * [Docker](https://www.docker.com/)
+* [Google Cloud](https://cloud.google.com/)
