@@ -6,7 +6,7 @@ COPY app app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir --upgrade -r ./requirements.txt
 
-COPY .env boot.sh ./
+COPY boot.sh ./
 RUN chmod +x boot.sh
 
 

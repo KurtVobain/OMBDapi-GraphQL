@@ -24,10 +24,10 @@ docker build -t seedtrace-image -f Dockerfile .
 ```
 
 ### Run container
-Execute:
+Replace ```<INSERT TOKEN HERE>``` by your OMDB apikey and execute:
 
 ```
-docker run --rm --name seedtrace-container  -p 80:80 -it seedtrace-image
+docker run --rm --name seedtrace-container -e OMDB_API_TOKEN=<INSERT TOKEN HERE> -p 80:80 -it seedtrace-image
 ```
 
 # Usage Example

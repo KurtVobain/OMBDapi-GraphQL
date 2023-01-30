@@ -38,8 +38,6 @@ class FilmConnection(Connection):
 
         @staticmethod
         def resolve_other(instance, info):
-            print(instance)
-            print(info)
             return "This is other: " + instance.node.other
 
 
