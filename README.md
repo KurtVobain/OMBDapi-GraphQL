@@ -4,6 +4,9 @@ Application for wrapping  API OMBD with GranpGL according to Relay specification
 
 More info about OMBDapi [here](https://www.omdbapi.com/).
 
+The application is deployed on Google Cloud.
+You can look at it [here](https://seedtrace-zau7cpuw7q-uc.a.run.app/).
+
 # Table of content
 * [Setup](#setup)
     * [Build image](#run-container)
