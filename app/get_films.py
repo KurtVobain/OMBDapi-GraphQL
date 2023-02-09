@@ -1,5 +1,4 @@
 import os
-
 import requests
 
 
@@ -25,23 +24,29 @@ def get_films(
         "type": result_type,
         "y": year,
     }
-    result = requests.get("http://www.omdbapi.com/", params=payload, timeout=10)
+    film_list = []
+
+    try:
+        result = requests.get("http://www.omdbapi.com/", params=payload, timeout=10)
+    except requests.exceptions.Timeout:
+        return film_list
+    except requests.exceptions.ConnectionError:
+        return film_list
 
     if result.json().get("Response") == "False":
-        film_list = []
+        return film_list
 
-    else:
-        # OMDB api returns 10 results per page
-        films_per_page = 10
-        response_pages = int(result.json().get("totalResults")) // films_per_page + 1
 
-        # Get full number of searched films in one list
-        film_list = result.json().get("Search")
-        for page in range(response_page + 1, response_pages + 1):
-            payload["page"] = page
-            result = requests.get("http://www.omdbapi.com/", params=payload, timeout=10)
+    # OMDB api returns 10 results per page
+    films_per_page = 10
+    response_pages = int(result.json().get("totalResults")) // films_per_page + 1
 
-            if result.json().get("Response") == "True":
-                film_list += result.json().get("Search")
+    # Get full number of searched films in one list
+    film_list = result.json().get("Search")
+    for page in range(response_page + 1, response_pages + 1):
+        payload["page"] = page
+        result = requests.get("http://www.omdbapi.com/", params=payload, timeout=10)
+        if result.json().get("Response") == "True":
+            film_list += result.json().get("Search")
 
     return film_list
